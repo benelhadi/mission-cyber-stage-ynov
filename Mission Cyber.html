@@ -1,0 +1,557 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mission Cyber</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout concept : une quête verticale, une mission par section, un rail de progression collant en haut. Palette : encre bleu nuit, ambre, corail, menthe discrète. */
+:root{
+  --bg:#F3F2F8; --surface:#FFFFFF; --ink:#16182E; --muted:#5B5F7E; --line:#DCDCEA;
+  --accent:#E8A317; --accent-ink:#2A1D00; --coral:#E4572E; --mint:#1E9E8F; --violet:#5B4FD6;
+  --panel:#16182E; --panel-ink:#F3F2F8; --good:#17805F; --bad:#C23B22; --warn:#B9770A;
+  --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --f-body:'Source Sans 3','Segoe UI',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1122; --surface:#1A1D38; --ink:#EEEDF8; --muted:#A3A7C8; --line:#2D3159;
+  --accent:#F4B63F; --accent-ink:#2A1D00; --coral:#FF7A55; --mint:#3CC9B7; --violet:#8F86FF;
+  --panel:#080A18; --panel-ink:#EEEDF8; --good:#3CC9A0; --bad:#FF7A66; --warn:#F4B63F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1122; --surface:#1A1D38; --ink:#EEEDF8; --muted:#A3A7C8; --line:#2D3159;
+  --accent:#F4B63F; --accent-ink:#2A1D00; --coral:#FF7A55; --mint:#3CC9B7; --violet:#8F86FF;
+  --panel:#080A18; --panel-ink:#EEEDF8; --good:#3CC9A0; --bad:#FF7A66; --warn:#F4B63F; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 var(--f-body);padding-inline:16px}
+.wrap{max-width:860px;margin-inline:auto}
+h1,h2,h3{font-family:var(--f-display);line-height:1.12;text-wrap:balance;margin:0}
+h2{font-size:clamp(26px,5vw,38px);font-weight:800;letter-spacing:-.01em}
+h3{font-size:20px;font-weight:700;margin-bottom:6px}
+p{margin:.5em 0}
+a{color:var(--violet)}
+button{font:inherit;cursor:pointer;color:inherit}
+:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--panel);color:var(--panel-ink);margin-inline:-16px;padding:8px 16px;border-bottom:3px solid var(--accent)}
+.rail-in{max-width:860px;margin-inline:auto;display:flex;align-items:center;gap:12px}
+.rail b{font-family:var(--f-display);font-size:15px;white-space:nowrap}
+.steps{display:flex;gap:6px;flex:1;min-width:0;overflow-x:auto;padding-block:2px}
+.steps a{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:700 13px var(--f-display);text-decoration:none;background:#2c3160;color:#cfd1ea;border:2px solid transparent}
+.steps a.done{background:var(--accent);color:var(--accent-ink)}
+.steps a.cur{border-color:#fff}
+.xp{font:600 13px var(--f-mono);white-space:nowrap}
+.hero{padding-block:48px 28px}
+.tag{display:inline-block;background:var(--accent);color:var(--accent-ink);font:700 12px var(--f-body);letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:99px}
+.hero h1{font-size:clamp(40px,9vw,76px);font-weight:800;margin:14px 0 10px;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;color:var(--coral)}
+.lead{font-size:20px;max-width:60ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;margin-block:14px}
+.card.dark{background:var(--panel);color:var(--panel-ink);border-color:transparent}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.rules li{margin:.35em 0}
+section.m{padding-block:44px 8px;border-top:1px solid var(--line);scroll-margin-top:60px}
+.mh{display:flex;gap:14px;align-items:center;margin-bottom:10px}
+.mnum{flex:none;width:52px;height:52px;border-radius:14px;background:var(--panel);color:var(--accent);display:grid;place-items:center;font:800 26px var(--f-display)}
+.mkicker{font:700 12px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.story{border-left:4px solid var(--accent);padding:4px 0 4px 14px;color:var(--muted);font-style:italic}
+.btn{background:var(--panel);color:var(--panel-ink);border:0;border-radius:10px;padding:9px 16px;font-weight:700}
+.btn.alt{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;border:2px solid var(--line);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:default}
+.chip{border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 12px;font-weight:600}
+.chip:hover{border-color:var(--violet)}
+.chip.sel{border-color:var(--violet);background:color-mix(in srgb,var(--violet) 14%,var(--surface))}
+.chip.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 16%,var(--surface))}
+.chip.ko{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.item{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border:0}
+.item .t{flex:1 1 220px;min-width:0}
+.fb{font-size:15px;margin-top:6px;padding:8px 12px;border-radius:8px;background:color-mix(in srgb,var(--mint) 12%,var(--surface))}
+.fb.bad{background:color-mix(in srgb,var(--bad) 12%,var(--surface))}
+.note{font-size:15px;color:var(--muted)}
+.win{display:none;margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--accent);color:var(--accent-ink);font-weight:700}
+.win.show{display:block}
+.mono{font-family:var(--f-mono);font-size:14px}
+.log{background:var(--panel);color:#d6d8f3;border-radius:10px;padding:12px;overflow-x:auto;font:13.5px/1.6 var(--f-mono);white-space:pre}
+.log .u{color:var(--accent)}
+.bar{height:12px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--mint);transition:width .3s}
+.lvl{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:700;font-size:14px;color:#fff}
+.lvl.l1{background:var(--good)}.lvl.l2{background:var(--warn);color:#2A1D00}.lvl.l3{background:var(--bad)}
+.flip{perspective:900px}
+.flip button{width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:16px;min-height:150px}
+.flip .back{display:none}
+.flip button.on .front{display:none}.flip button.on .back{display:block}
+.flip .hint{font-size:13px;color:var(--muted);margin-top:8px}
+.mail{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.mail .hd{padding:10px 14px;border-bottom:1px solid var(--line);font-size:15px;background:color-mix(in srgb,var(--line) 35%,var(--surface))}
+.mail .bd{padding:14px}
+.hot{background:none;border:0;border-bottom:2px dashed var(--muted);padding:0;color:inherit;font:inherit}
+.hot.found{border-bottom:2px solid var(--good);background:color-mix(in srgb,var(--good) 20%,transparent)}
+.hot.miss{border-bottom:2px solid var(--bad);background:color-mix(in srgb,var(--bad) 16%,transparent)}
+input[type=text],textarea,input[type=range]{font:inherit;color:inherit}
+input[type=text],textarea{width:100%;padding:9px 12px;border-radius:10px;border:2px solid var(--line);background:var(--surface)}
+textarea{min-height:70px;resize:vertical}
+label{font-weight:700;font-size:15px;display:block;margin-top:10px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tabs .chip[aria-selected=true]{background:var(--panel);color:var(--panel-ink);border-color:var(--panel)}
+.panel[hidden]{display:none}
+.phases{counter-reset:p;list-style:none;padding:0;display:grid;gap:10px}
+.phases li{counter-increment:p;display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.phases li::before{content:counter(p);flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:800 15px var(--f-display)}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top;font-size:15px}
+th{background:color-mix(in srgb,var(--line) 40%,var(--surface))}
+.tw{overflow-x:auto}
+.report{border:2px solid var(--ink);border-radius:10px;padding:14px;background:var(--surface);font-size:15px;white-space:pre-wrap}
+.check li{list-style:none;margin:.2em 0}
+.check{padding:0}
+.q{margin:14px 0}
+.q .opts{display:grid;gap:8px;margin-top:8px}
+.q .opts .chip{text-align:left}
+.cert{border:3px double var(--accent);border-radius:16px;padding:26px;text-align:center;background:var(--panel);color:var(--panel-ink)}
+.cert h3{font-size:30px;color:var(--accent)}
+.cert .nm{font:800 34px var(--f-display);margin:10px 0}
+footer{padding-block:40px 60px;color:var(--muted);font-size:14px}
+.sr{position:absolute;left:-9999px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.bar>i{transition:none}}
+</style>
+
+<div class="rail"><div class="rail-in">
+  <b>Mission Cyber</b>
+  <nav class="steps" id="steps" aria-label="Progression"></nav>
+  <span class="xp" id="xp">0 XP</span>
+</div></div>
+
+<main class="wrap">
+<header class="hero">
+  <span class="tag">Stage de découverte · cybersécurité</span>
+  <h1>Mission <em>Cyber</em></h1>
+  <p class="lead">Pendant 7 missions, tu vas enquêter sur une vraie affaire, comprendre comment on protège des données, comment on attaque, et surtout comment un hacker éthique pense. À la fin, tu auras un bagage pour t'entraîner légalement et choisir ton chemin.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card"><h3>Ce que tu vas faire</h3><p>Trier, deviner, noter des risques, enquêter dans des journaux, casser un chiffrement simple et rédiger un rapport de bug.</p></div>
+    <div class="card"><h3>Ce que tu vas gagner</h3><p>Un vocabulaire solide, des réflexes, une liste de sites pour s'entraîner et un plan pour les 90 prochains jours.</p></div>
+  </div>
+  <div class="card dark">
+    <h3 style="color:var(--accent)">Le code du hacker éthique</h3>
+    <ol class="rules" style="margin:8px 0 0;padding-left:20px">
+      <li><b>Autorisation d'abord.</b> Tu ne testes que ce qu'on t'a permis de tester, et seulement ce qui est dans le cadre fixé.</li>
+      <li><b>Tu ne fais pas de mal.</b> Pas de vol, pas de suppression, pas de curiosité sur les données des gens.</li>
+      <li><b>Tu préviens, tu ne publies pas.</b> Une faille se signale au propriétaire, avec un rapport clair.</li>
+      <li><b>Tu t'entraînes au bon endroit.</b> Sur des sites faits pour ça, jamais sur ceux des autres.</li>
+    </ol>
+  </div>
+</header>
+
+<!-- ============== M1 ============== -->
+<section class="m" id="m1" data-m="1">
+  <div class="mh"><div class="mnum">1</div><div><div class="mkicker">Cours 1 · données personnelles</div><h2>L'avis de recherche</h2></div></div>
+  <p class="story">Le centre d'appels CentreCall (120 conseillers, 15 000 appels par jour, tous enregistrés) t'engage comme enquêteur junior. Premier réflexe : savoir ce qui est une donnée personnelle.</p>
+  <div class="card">
+    <p><b>À savoir.</b> Une donnée personnelle, c'est toute information qui permet d'identifier une personne. <b>Directe</b> : on la reconnaît tout de suite (nom, photo). <b>Indirecte</b> : on la retrouve en recoupant plusieurs indices. <b>Non personnelle</b> : elle ne désigne personne.</p>
+    <div id="m1list"></div>
+    <div class="win" id="w1">Mission 1 réussie : tu sais lire un avis de recherche. +100 XP</div>
+  </div>
+  <div class="card">
+    <h3>Traitement, finalité, minimisation</h3>
+    <p>Un <b>traitement</b> est tout ce qu'on fait des données : collecter, enregistrer, ranger, envoyer. La <b>finalité</b> est la raison. La <b>minimisation</b> dit : on ne garde que le nécessaire.</p>
+    <p class="note">Question pour toi : CentreCall enregistre chaque appel et garde les enregistrements sans limite de durée. Pourquoi est-ce un problème ?</p>
+    <div class="row" id="m1q"></div><div id="m1qfb"></div>
+  </div>
+</section>
+
+<!-- ============== M2 ============== -->
+<section class="m" id="m2" data-m="2">
+  <div class="mh"><div class="mnum">2</div><div><div class="mkicker">Cours 2 · RGPD et CNIL</div><h2>Les règles du jeu</h2></div></div>
+  <p class="story">Les règles sont écrites : le RGPD (règlement européen) fixe le cadre, la CNIL (autorité française) contrôle, conseille et sanctionne. Une amende peut aller jusqu'à 4 % du chiffre d'affaires mondial ou 20 millions d'euros.</p>
+  <div class="grid">
+    <div class="card"><h3>5 principes</h3><p class="note">Finalité, proportionnalité, durée limitée, sécurité, droits des personnes.</p></div>
+    <div class="card"><h3>Des droits</h3><p class="note">Accès, rectification, effacement (droit à l'oubli), portabilité, opposition.</p></div>
+    <div class="card"><h3>6 bases légales</h3><p class="note">Consentement, contrat, obligation légale, intérêts vitaux, mission d'intérêt public, intérêt légitime.</p></div>
+  </div>
+  <div class="card">
+    <h3>Ta décision</h3>
+    <div class="mail"><div class="hd"><b>De :</b> Mme Marchand &nbsp; <b>Objet :</b> mon appel d'il y a 4 ans</div>
+    <div class="bd">« Bonjour, je veux écouter l'enregistrement de mon appel de 2022, puis que vous l'effaciez. »</div></div>
+    <p><b>Que fais-tu ?</b></p>
+    <div id="m2opts" class="q"><div class="opts"></div></div><div id="m2fb"></div>
+  </div>
+  <div class="card">
+    <h3>Mini-défi : les délais</h3>
+    <p class="note">Associe chaque situation au bon délai.</p>
+    <div id="m2d"></div>
+    <div class="win" id="w2">Mission 2 réussie : tu connais les règles. +100 XP</div>
+  </div>
+</section>
+
+<!-- ============== M3 ============== -->
+<section class="m" id="m3" data-m="3">
+  <div class="mh"><div class="mnum">3</div><div><div class="mkicker">Cours 1 · risques</div><h2>L'angle mort</h2></div></div>
+  <p class="story">Un pirate cherche une faille. Toi, tu cherches l'angle mort avant lui. Il faut distinguer trois mots que beaucoup confondent.</p>
+  <div class="grid">
+    <div class="card"><h3>Vulnérabilité</h3><p class="note">La faiblesse du système : mot de passe faible, logiciel pas à jour, compte partagé.</p></div>
+    <div class="card"><h3>Menace</h3><p class="note">Ce qui peut exploiter la faille : un pirate, un virus, une erreur humaine.</p></div>
+    <div class="card"><h3>Risque</h3><p class="note">Quand une menace rencontre une vulnérabilité et provoque un dommage.</p></div>
+  </div>
+  <div class="card">
+    <h3>Défi A : V, M ou R ?</h3>
+    <div id="m3a"></div>
+  </div>
+  <div class="card">
+    <h3>Défi B : note le risque</h3>
+    <p>Score = <b>vraisemblance × gravité</b>, chacune de 1 à 4. De 1 à 3 : faible. De 4 à 8 : moyen. À partir de 9 : critique.</p>
+    <div id="m3b"></div>
+    <div class="win" id="w3">Mission 3 réussie : tu sais noter un risque. +100 XP</div>
+  </div>
+</section>
+
+<!-- ============== M4 ============== -->
+<section class="m" id="m4" data-m="4">
+  <div class="mh"><div class="mnum">4</div><div><div class="mkicker">Cours 1 · piliers et preuve</div><h2>Qui a fait quoi ?</h2></div></div>
+  <p class="story">Les professionnels protègent trois piliers : <b>confidentialité</b> (seuls les autorisés voient), <b>disponibilité</b> (ça marche quand on en a besoin), <b>intégrité</b> (rien n'est modifié en cachette). Un quatrième compte beaucoup : la <b>preuve</b>.</p>
+  <div class="card"><h3>Défi A : quel pilier est touché ?</h3><div id="m4a"></div></div>
+  <div class="card">
+    <h3>Défi B : l'enquête sur le journal</h3>
+    <p>Un fichier client a été effacé hier soir. Voici le journal du serveur d'écoute.</p>
+<pre class="log" id="logbox"></pre>
+    <p><b>Qui a effacé le fichier ?</b></p>
+    <div class="row" id="m4b"></div><div id="m4bfb"></div>
+    <div class="win" id="w4">Mission 4 réussie : tu as compris pourquoi la preuve compte. +100 XP</div>
+  </div>
+</section>
+
+<!-- ============== M5 ============== -->
+<section class="m" id="m5" data-m="5">
+  <div class="mh"><div class="mnum">5</div><div><div class="mkicker">Cours 1 · attaquants et attaques</div><h2>Qui nous attaque ?</h2></div></div>
+  <p class="story">Chaque attaquant a ses raisons. Retourne les cartes pour voir un cas réel.</p>
+  <div class="grid flip" id="m5cards"></div>
+  <div class="card">
+    <h3>Labo : le détecteur d'hameçonnage</h3>
+    <p>Voici un faux message. Clique sur tout ce qui te semble louche (il y a 3 vrais indices et 1 piège).</p>
+    <div class="mail">
+      <div class="hd"><b>De :</b> <button class="hot" data-h="1">service-client@banque-securite.example</button><br><b>Objet :</b> <button class="hot" data-h="2">URGENT : votre compte sera fermé dans 24 h</button></div>
+      <div class="bd">Bonjour cher client,<br>Nous avons détecté une activité <button class="hot" data-h="0">inhabituelle</button> sur votre compte. <button class="hot" data-h="3">Cliquez ici immédiatement et saisissez votre mot de passe</button> pour éviter la fermeture.<br>Cordialement, le service de sécurité.</div>
+    </div>
+    <p class="note" id="m5fb">Indices trouvés : 0 sur 3</p>
+    <div class="win" id="w5">Mission 5 réussie : tu repères un piège. +100 XP</div>
+  </div>
+</section>
+
+<!-- ============== M6 ============== -->
+<section class="m" id="m6" data-m="6">
+  <div class="mh"><div class="mnum">6</div><div><div class="mkicker">Laboratoire</div><h2>Les trois expériences</h2></div></div>
+  <p class="story">Trois manipulations qui tournent dans ton navigateur. Rien n'est envoyé nulle part.</p>
+  <div class="card">
+    <h3>Expérience 1 : l'empreinte (intégrité)</h3>
+    <p>Une fonction de hachage transforme un texte en empreinte. Si un seul caractère change, l'empreinte est totalement différente : c'est comme ça qu'on détecte qu'un fichier a été modifié.</p>
+    <label for="h1">Texte A</label><input type="text" id="h1" value="Mission validée">
+    <label for="h2">Texte B</label><input type="text" id="h2" value="Mission validee">
+    <p class="mono" id="hout" style="word-break:break-all;margin-top:12px"></p>
+    <p class="note" id="hnote"></p>
+  </div>
+  <div class="card">
+    <h3>Expérience 2 : la solidité d'un mot de passe</h3>
+    <p class="note">N'écris pas ton vrai mot de passe. Teste des exemples. Rien ne quitte cette page.</p>
+    <label for="pw">Mot de passe d'essai</label><input type="text" id="pw" value="chat2010" autocomplete="off">
+    <div class="bar" style="margin-top:10px"><i id="pwbar"></i></div>
+    <p id="pwout" style="margin-top:8px"></p>
+    <p class="note">Estimation : on suppose un attaquant très équipé (10 milliards d'essais par seconde) et un mot de passe aléatoire. Les mots du dictionnaire et les dates se devinent bien plus vite. Une longue phrase de passe est la meilleure idée.</p>
+  </div>
+  <div class="card">
+    <h3>Expérience 3 : le chiffre de César</h3>
+    <p>César décalait chaque lettre de quelques rangs. Message codé à retrouver : fais glisser le décalage jusqu'à ce que le texte ait un sens.</p>
+    <p class="mono" id="cin" style="font-size:18px"></p>
+    <input type="range" id="cs" min="0" max="25" value="0" aria-label="Décalage">
+    <p class="mono" style="font-size:18px">Décalage : <span id="cv">0</span> → <span id="cout"></span></p>
+    <div class="win" id="w6">Mission 6 réussie : tu as cassé ton premier chiffre. +100 XP</div>
+    <p class="note">Ce chiffre se casse en quelques secondes : il est utile pour comprendre, jamais pour protéger quelque chose.</p>
+  </div>
+</section>
+
+<!-- ============== M7 ============== -->
+<section class="m" id="m7" data-m="7">
+  <div class="mh"><div class="mnum">7</div><div><div class="mkicker">Ton bagage</div><h2>Hacker éthique : par où commencer ?</h2></div></div>
+  <p class="story">Un hacker éthique cherche les failles avec l'accord du propriétaire, pour que quelqu'un les répare. C'est un vrai métier, et il se prépare tôt, en s'entraînant au bon endroit.</p>
+  <div class="tabs" role="tablist" id="tabs"></div>
+
+  <div class="panel" id="p-loi">
+    <div class="card">
+      <h3>La loi, en une phrase</h3>
+      <p>Entrer dans un système informatique sans y être autorisé est un délit en France (article 323-1 du Code pénal : jusqu'à 3 ans de prison et 100 000 € d'amende, davantage dans certains cas). « Je voulais juste voir » ne protège pas, et être jeune n'efface pas la loi.</p>
+      <div class="grid">
+        <div class="card"><h3>Permis</h3><p class="note">Un site d'entraînement fait pour ça. Ta propre machine virtuelle. Un programme de bug bounty, dans son périmètre.</p></div>
+        <div class="card"><h3>Interdit</h3><p class="note">Tester le site du collège, d'un copain, d'une entreprise ou de n'importe quel service sans accord écrit.</p></div>
+      </div>
+      <p class="note">En France, quelqu'un qui découvre une faille par hasard peut la signaler à l'ANSSI, qui peut garder son identité confidentielle. Vérifie la procédure sur le site officiel avant de le faire.</p>
+    </div>
+  </div>
+
+  <div class="panel" id="p-pentest" hidden>
+    <div class="card">
+      <h3>Un test d'intrusion (pentest) en 5 étapes</h3>
+      <p class="note">Un pentest est une attaque simulée, commandée par l'entreprise, avec un contrat qui fixe ce qu'on a le droit de tester.</p>
+      <ol class="phases">
+        <li><div><b>Cadrage.</b> Contrat, périmètre, dates, règles. Sans accord signé, on ne commence pas.</div></li>
+        <li><div><b>Reconnaissance.</b> On regarde ce qui est public : site, technologies, informations visibles. On apprend comment la cible est construite.</div></li>
+        <li><div><b>Analyse.</b> On cherche les vulnérabilités probables : logiciel ancien, mauvaise configuration, droits trop larges.</div></li>
+        <li><div><b>Test.</b> Dans le périmètre, on vérifie qu'une faille est réelle, sans toucher aux vraies données et sans casser le service.</div></li>
+        <li><div><b>Rapport.</b> Le plus important : ce qu'on a trouvé, l'impact, comment réparer. Un pentest sans bon rapport ne sert à rien.</div></li>
+      </ol>
+      <p class="note">Tu reconnais le cours : la phase d'analyse, c'est chercher les vulnérabilités (mission 3) ; le rapport, c'est le PIA de CentreCall.</p>
+    </div>
+  </div>
+
+  <div class="panel" id="p-bounty" hidden>
+    <div class="card">
+      <h3>Le bug bounty</h3>
+      <p>Une entreprise publie un <b>programme</b> : « voici ce que vous pouvez tester (le périmètre), voici ce qui est interdit, voici la récompense pour une faille valide ». Des chercheurs testent, envoient un rapport, et sont payés si la faille est nouvelle et réelle.</p>
+      <p class="note">Des plateformes comme HackerOne, Bugcrowd, Intigriti ou YesWeHack (française) hébergent ces programmes. Beaucoup demandent d'être majeur ou d'avoir l'accord d'un parent : lis les conditions de chacune avant de t'inscrire.</p>
+    </div>
+    <div class="card">
+      <h3>Atelier : écris ton premier rapport (cas fictif)</h3>
+      <p class="note"><b>Situation inventée.</b> Sur le site de la « Boutique Demo » (fictive), en changeant le numéro de commande dans l'adresse de la page, on voit la commande d'un autre client, avec son nom et son adresse. Tu t'arrêtes dès que tu l'as constaté, sans rien copier.</p>
+      <label for="r1">Titre court</label><input type="text" id="r1" placeholder="Ex. : Un client peut voir la commande d'un autre">
+      <label for="r2">Où ? (adresse fictive)</label><input type="text" id="r2" placeholder="Ex. : boutique-demo.example/commande?id=…">
+      <label for="r3">Comment reproduire, étape par étape</label><textarea id="r3" placeholder="1. Je me connecte avec mon compte de test. 2. …"></textarea>
+      <label for="r4">Quel est l'impact ?</label><textarea id="r4" placeholder="Qui est touché ? Quelles données ? Quel pilier (C, D, I) ?"></textarea>
+      <label for="r5">Comment corriger ?</label><textarea id="r5" placeholder="Ex. : vérifier que la commande appartient bien au client connecté."></textarea>
+      <p><b>Aperçu du rapport :</b></p>
+      <div class="report" id="rep"></div>
+      <ul class="check" id="rck"></ul>
+      <div class="win" id="w7">Rapport complet : tu penses comme un chasseur de bugs. +100 XP</div>
+    </div>
+  </div>
+
+  <div class="panel" id="p-train" hidden>
+    <div class="card">
+      <h3>S'entraîner légalement</h3>
+      <p class="note">Ces sites sont faits pour apprendre. Lis toujours les règles d'âge et les conditions de chacun.</p>
+      <div class="tw"><table>
+        <tr><th>Site</th><th>Pour quoi faire</th></tr>
+        <tr><td>Root-Me (France)</td><td>Des centaines d'épreuves pour s'entraîner sur le web, le réseau, la cryptographie.</td></tr>
+        <tr><td>TryHackMe</td><td>Parcours guidés pour débutants, avec une machine virtuelle dans le navigateur.</td></tr>
+        <tr><td>PortSwigger Web Security Academy</td><td>Cours gratuits et exercices sur les failles web, par ceux qui fabriquent des outils de pentest.</td></tr>
+        <tr><td>OverTheWire</td><td>Des jeux de piratage en ligne de commande, pour apprendre Linux en jouant.</td></tr>
+        <tr><td>picoCTF</td><td>Compétition d'apprentissage pour jeunes, avec des défis de tous niveaux.</td></tr>
+        <tr><td>FCSC (ANSSI)</td><td>Concours français de cybersécurité ouvert aux débutants ; regarde les dates et les règles.</td></tr>
+        <tr><td>Cybermalveillance.gouv.fr</td><td>Pour comprendre les menaces du quotidien et les bons réflexes.</td></tr>
+      </table></div>
+      <p class="note">Un CTF (« capture the flag ») est une compétition où chaque défi cache un drapeau, c'est-à-dire un mot secret à trouver.</p>
+    </div>
+  </div>
+
+  <div class="panel" id="p-jobs" hidden>
+    <div class="card">
+      <h3>Les métiers</h3>
+      <div class="grid">
+        <div class="card"><h3>Pentesteur</h3><p class="note">Attaque simulée, commandée par l'entreprise, avec rapport.</p></div>
+        <div class="card"><h3>Chasseur de bugs</h3><p class="note">Cherche des failles sur des programmes publics et gagne une récompense.</p></div>
+        <div class="card"><h3>Analyste SOC</h3><p class="note">Surveille les alertes d'une entreprise 24 h sur 24 et réagit aux incidents.</p></div>
+        <div class="card"><h3>DevSecOps</h3><p class="note">Intègre la sécurité dans le développement et le déploiement des applications.</p></div>
+        <div class="card"><h3>Analyste forensic</h3><p class="note">Enquête après une attaque : qui, quoi, comment, avec preuves.</p></div>
+        <div class="card"><h3>RSSI</h3><p class="note">Responsable de la sécurité d'une organisation : stratégie, budget, équipes.</p></div>
+      </div>
+      <h3 style="margin-top:14px">Un chemin possible</h3>
+      <p>Lycée avec les maths et la spécialité numérique, puis BTS SIO (options SISR ou SLAM), BUT Réseaux et télécoms, licence professionnelle ou école d'ingénieurs, avec des CTF et des projets personnels en parallèle. Les certifications viennent plus tard.</p>
+    </div>
+  </div>
+
+  <div class="panel" id="p-plan" hidden>
+    <div class="card">
+      <h3>Ton plan pour les 90 prochains jours</h3>
+      <p class="note">Coche ce que tu t'engages à faire. Tout reste dans ce navigateur.</p>
+      <ul class="check" id="plan"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FINAL ============== -->
+<section class="m" id="final" data-m="8">
+  <div class="mh"><div class="mnum">★</div><div><div class="mkicker">Épreuve finale</div><h2>La licence de hacker éthique</h2></div></div>
+  <div class="card"><div id="quiz"></div></div>
+  <div id="certbox"></div>
+</section>
+
+<footer>
+  <p>Support de cours de Hamza Ben El Hadi, développé pour un stage de découverte. Les personnages, entreprises et sites de CentreCall et de la Boutique Demo sont fictifs. Les exemples d'attaques réelles servent d'illustration et résument des faits publics.</p>
+  <p>Cette page ne conserve que ta progression, dans ce navigateur.</p>
+</footer>
+</main>
+
+<script>
+(function(){
+  var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  var store={get:function(k,d){try{var v=localStorage.getItem('mc_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem('mc_'+k,JSON.stringify(v))}catch(e){}}};
+  var done=store.get('done',{});
+  var mems={};
+  function el(tag,attrs,html){var e=document.createElement(tag);if(attrs)for(var k in attrs)e.setAttribute(k,attrs[k]);if(html!=null)e.innerHTML=html;return e}
+  function xp(){var n=0;for(var k in done)if(done[k])n+=100;$('#xp').textContent=n+' XP'}
+  function rail(){
+    var box=$('#steps');box.innerHTML='';
+    for(var i=1;i<=7;i++){var a=el('a',{href:'#m'+i,'aria-label':'Mission '+i},i);if(done[i])a.className='done';box.appendChild(a)}
+    var f=el('a',{href:'#final','aria-label':'Épreuve finale'},'★');if(done[8])f.className='done';box.appendChild(f);
+    xp();
+  }
+  function win(n){if(!done[n]){done[n]=true;store.set('done',done);rail()}var w=$('#w'+n);if(w)w.classList.add('show')}
+  if(IntersectionObserver){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var id=e.target.id.replace('m','');$$('#steps a').forEach(function(a,i){a.classList.toggle('cur',a.getAttribute('href')==='#'+e.target.id)})}})},{rootMargin:'-40% 0px -55% 0px'});$$('section.m').forEach(function(s){io.observe(s)})}
+
+  /* ---- generic classifier ---- */
+  function classifier(box,items,choices,onAll,idPrefix){
+    var solved=0;
+    items.forEach(function(it,i){
+      var row=el('div',{class:'item'});
+      row.appendChild(el('div',{class:'t'},it.t));
+      var cs=el('div',{class:'row'});var fb=el('div',{class:'fb',style:'display:none;flex-basis:100%'});
+      choices.forEach(function(c){
+        var b=el('button',{class:'chip',type:'button'},c[1]);
+        b.addEventListener('click',function(){
+          if(row.dataset.ok)return;
+          if(c[0]===it.a){b.classList.add('ok');row.dataset.ok=1;fb.className='fb';fb.textContent=it.w;fb.style.display='block';solved++;
+            $$('button',cs).forEach(function(x){x.disabled=true});if(solved===items.length)onAll()}
+          else{b.classList.add('ko');fb.className='fb bad';fb.textContent='Pas tout à fait. Réfléchis encore : '+(it.h||'relis la définition.');fb.style.display='block'}
+        });cs.appendChild(b)});
+      row.appendChild(cs);row.appendChild(fb);box.appendChild(row);
+    });
+  }
+
+  /* ---- M1 ---- */
+  classifier($('#m1list'),[
+    {t:'Ton prénom et ton nom',a:'D',w:'Directe : elle te désigne tout de suite.'},
+    {t:'La photo de classe où on te reconnaît',a:'D',w:'Directe : ton visage te désigne.'},
+    {t:'Ton numéro de sécurité sociale',a:'D',w:'Directe : c\'est un identifiant unique.'},
+    {t:'Un pseudo de jeu + ta ville + ton âge, ensemble',a:'I',w:'Indirecte : chaque indice seul ne dit rien, ensemble ils te retrouvent.',h:'plusieurs indices ensemble.'},
+    {t:'L\'adresse IP de ton ordinateur',a:'I',w:'Indirecte : elle peut être rattachée à toi en recoupant.',h:'il faut recouper pour te retrouver.'},
+    {t:'Le nombre d\'élèves du collège',a:'N',w:'Non personnelle : elle ne désigne personne.',h:'cela désigne-t-il quelqu\'un ?'},
+    {t:'Le nom d\'une entreprise',a:'N',w:'Non personnelle : une entreprise n\'est pas une personne physique.',h:'une personne physique ?'}
+  ],[['D','Directe'],['I','Indirecte'],['N','Non personnelle']],function(){win(1)});
+  (function(){var o=[['Aucun, tout est normal',0,'Non : sans durée limitée, les données restent exposées sans raison.'],['La durée de conservation devrait être limitée et liée à la finalité',1,'Oui : principe de durée limitée. On garde le nécessaire, pas plus.'],['Il manque seulement un mot de passe',0,'Non : le problème est la durée, pas le mot de passe.']];
+    var b=$('#m1q');o.forEach(function(x){var c=el('button',{class:'chip',type:'button'},x[0]);c.addEventListener('click',function(){c.classList.add(x[1]?'ok':'ko');$('#m1qfb').innerHTML='<div class="fb '+(x[1]?'':'bad')+'">'+x[2]+'</div>'});b.appendChild(c)})})();
+
+  /* ---- M2 ---- */
+  (function(){
+    var o=[['Je l\'ignore : c\'est trop vieux',0,'Non : la personne a le droit d\'accès et d\'effacement, et il faut répondre.'],
+           ['J\'efface tout tout de suite, sans rien vérifier',0,'Non : il faut d\'abord vérifier l\'identité de la demandeuse, sinon n\'importe qui pourrait demander l\'effacement des données d\'un autre.'],
+           ['Je vérifie son identité, je réponds dans le mois, je lui donne l\'accès et j\'étudie l\'effacement',1,'Oui. Délai : un mois (prolongeable dans certains cas). L\'effacement dépend des cas, mais l\'enregistrement ne doit pas être gardé sans limite.'],
+           ['Je lui réponds que les enregistrements ne sont pas des données personnelles',0,'Non : la voix et les informations de l\'appel permettent d\'identifier la personne.']];
+    var box=$('#m2opts .opts');o.forEach(function(x){var c=el('button',{class:'chip',type:'button'},x[0]);c.addEventListener('click',function(){c.classList.add(x[1]?'ok':'ko');$('#m2fb').innerHTML='<div class="fb '+(x[1]?'':'bad')+'">'+x[2]+'</div>'});box.appendChild(c)});
+    classifier($('#m2d'),[
+      {t:'Une personne demande l\'accès à ses données',a:'1m',w:'Un mois pour répondre.'},
+      {t:'Une violation de données à risque est découverte',a:'72h',w:'72 heures pour prévenir la CNIL.'},
+      {t:'La CNIL peut prononcer une sanction financière jusqu\'à…',a:'4',w:'4 % du chiffre d\'affaires mondial (ou 20 M€, le plus élevé).'}
+    ],[['1m','1 mois'],['72h','72 heures'],['4','4 % du CA mondial']],function(){win(2)});
+  })();
+
+  /* ---- M3 ---- */
+  classifier($('#m3a'),[
+    {t:'Le compte « superviseur » est partagé par 15 personnes.',a:'V',w:'Vulnérabilité : c\'est une faiblesse du système.'},
+    {t:'Un ex-salarié rancunier connaît le réseau.',a:'M',w:'Menace : il peut exploiter une faille.'},
+    {t:'Un rançongiciel chiffre les enregistrements et arrête le service.',a:'R',w:'Risque : la menace rencontre la vulnérabilité et cause un dommage.'},
+    {t:'La sauvegarde de nuit n\'a jamais été testée.',a:'V',w:'Vulnérabilité : on ne sait pas si elle fonctionne.'}
+  ],[['V','Vulnérabilité'],['M','Menace'],['R','Risque']],function(){});
+  (function(){
+    var sc=[{t:'Compte superviseur partagé par 15 personnes',v:4,g:3,why:'Vraisemblable (tout le monde a le mot de passe) et grave (on ne peut plus prouver qui a fait quoi).'},
+            {t:'Sauvegarde jamais testée',v:3,g:4,why:'Si un jour on en a besoin et qu\'elle ne marche pas, on perd tout.'},
+            {t:'Un vieux badge d\'accès oublié dans un tiroir',v:2,g:1,why:'Peu probable et peu grave, on surveille.'}];
+    var box=$('#m3b');var seen={};
+    sc.forEach(function(s,i){
+      var d=el('div',{class:'item'});
+      d.appendChild(el('div',{class:'t'},'<b>'+s.t+'</b>'));
+      var c=el('div',{class:'row'});
+      function sel(l,id){var x=el('select',{'aria-label':l,id:id});x.innerHTML='<option value="">'+l+'</option><option>1</option><option>2</option><option>3</option><option>4</option>';x.style.cssText='font:inherit;padding:6px;border-radius:8px;border:2px solid var(--line);background:var(--surface);color:var(--ink)';return x}
+      var V=sel('V ?','v'+i),G=sel('G ?','g'+i);var out=el('span',{class:'lvl'},'—');var fb=el('div',{class:'fb',style:'display:none;flex-basis:100%'});
+      function upd(){if(V.value&&G.value){var n=V.value*G.value;out.textContent=n+' : '+(n>=9?'critique':n>=4?'moyen':'faible');out.className='lvl '+(n>=9?'l3':n>=4?'l2':'l1');fb.style.display='block';fb.innerHTML='Suggestion du formateur : V'+s.v+' × G'+s.g+' = '+(s.v*s.g)+'. '+s.why+' <i>(Il n\'y a pas une seule bonne note, il y a de bons arguments.)</i>';seen[i]=1;if(Object.keys(seen).length===sc.length)win(3)}}
+      V.addEventListener('change',upd);G.addEventListener('change',upd);
+      c.appendChild(V);c.appendChild(G);c.appendChild(out);d.appendChild(c);d.appendChild(fb);box.appendChild(d)});
+  })();
+
+  /* ---- M4 ---- */
+  classifier($('#m4a'),[
+    {t:'Un rançongiciel arrête tous les serveurs.',a:'D',w:'Disponibilité : le service n\'est plus accessible.'},
+    {t:'Quelqu\'un modifie en cachette le montant d\'une facture.',a:'I',w:'Intégrité : l\'information n\'est plus exacte.'},
+    {t:'2 000 fiches clients sont publiées sur Internet.',a:'C',w:'Confidentialité : des personnes non autorisées y accèdent.'},
+    {t:'Un site est défiguré et affiche un message revendicatif.',a:'I',w:'Intégrité : le contenu a été modifié.'}
+  ],[['C','Confidentialité'],['D','Disponibilité'],['I','Intégrité']],function(){});
+  $('#logbox').innerHTML=
+'22:03:11  connexion      compte <span class="u">superviseur</span>   poste P-14\n22:05:40  consultation   fiche client 4471\n22:41:02  connexion      compte <span class="u">superviseur</span>   poste P-02\n22:44:19  <span class="u">SUPPRESSION</span>    fiche client 4471   compte <span class="u">superviseur</span>\n23:10:55  déconnexion    compte <span class="u">superviseur</span>';
+  (function(){var o=[['Le poste P-14',0,'Rien ne le prouve : le même compte s\'est connecté depuis deux postes.'],['Le poste P-02',0,'C\'est le poste de la suppression, mais pas forcément la personne qui l\'utilisait.'],['Impossible de savoir, le compte est partagé par 15 personnes',1,'Oui. Le journal est bien tenu, mais sans compte nominatif on ne peut pas prouver qui a agi. Mesures : un compte par personne, une authentification forte, des journaux conservés.']];
+    var b=$('#m4b');o.forEach(function(x){var c=el('button',{class:'chip',type:'button'},x[0]);c.addEventListener('click',function(){c.classList.add(x[1]?'ok':'ko');$('#m4bfb').innerHTML='<div class="fb '+(x[1]?'':'bad')+'">'+x[2]+'</div>';if(x[1])win(4)});b.appendChild(c)})})();
+
+  /* ---- M5 ---- */
+  (function(){
+    var P=[['Cybercriminel','Il cherche l\'argent : rançon, revente de données.','LockBit : groupe qui vend un rançongiciel « clé en main ». Il a revendiqué l\'attaque de l\'hôpital de Corbeil-Essonnes en 2022.'],
+           ['Hacktiviste','Il défend une cause et veut faire du bruit.','Anonymous : en 2010, attaques par déni de service contre Visa, MasterCard et PayPal après le blocage des dons à WikiLeaks.'],
+           ['Étatique','Espionnage ou déstabilisation, avec de gros moyens.','Lazarus (Corée du Nord, selon les États-Unis) : piratage de Sony Pictures en 2014, rançongiciel WannaCry en 2017.'],
+           ['Initié malveillant','Un employé ou prestataire qui agit de l\'intérieur.','Edward Snowden, prestataire de la NSA : copie puis divulgue des documents secrets en 2013.'],
+           ['Amateur curieux','Il teste ses compétences, sans but précis.','Gary McKinnon, Britannique : s\'introduit dans des systèmes de la NASA et de l\'armée américaine en 2001-2002, par curiosité. Il a été poursuivi malgré cela.']];
+    var box=$('#m5cards');P.forEach(function(p){var c=el('div',{class:'flip'});var b=el('button',{type:'button','aria-pressed':'false'},'<div class="front"><h3>'+p[0]+'</h3><p>'+p[1]+'</p><div class="hint">Touche pour voir un cas réel</div></div><div class="back"><h3>'+p[0]+'</h3><p>'+p[2]+'</p></div>');b.addEventListener('click',function(){var on=b.classList.toggle('on');b.setAttribute('aria-pressed',on)});c.appendChild(b);box.appendChild(c)});
+    var found={},bad={};var ok={1:1,2:1,3:1};
+    $$('.hot').forEach(function(h){h.addEventListener('click',function(){var k=h.dataset.h;if(k==='0'){h.classList.add('miss');$('#m5fb').textContent='« Inhabituelle » est un mot ordinaire : pas un indice.'+' Indices trouvés : '+Object.keys(found).length+' sur 3';return}
+      found[k]=1;h.classList.add('found');var n=Object.keys(found).length;$('#m5fb').textContent='Indices trouvés : '+n+' sur 3';if(n===3){$('#m5fb').textContent='Indices trouvés : 3 sur 3 (le mot « inhabituelle » n\'en est pas un).';win(5)}})});
+  })();
+
+  /* ---- M6 ---- */
+  (function(){
+    function sha(t){var b=new TextEncoder().encode(t);return crypto.subtle.digest('SHA-256',b).then(function(d){return Array.prototype.map.call(new Uint8Array(d),function(x){return ('0'+x.toString(16)).slice(-2)}).join('')})}
+    function bits(a,b){var n=0;for(var i=0;i<a.length;i++){var x=parseInt(a[i],16)^parseInt(b[i],16);while(x){n+=x&1;x>>=1}}return n}
+    function run(){
+      if(!window.crypto||!crypto.subtle){$('#hout').textContent='Cette fonction demande un navigateur récent.';return}
+      Promise.all([sha($('#h1').value),sha($('#h2').value)]).then(function(r){
+        $('#hout').innerHTML='A : '+r[0].slice(0,32)+'…<br>B : '+r[1].slice(0,32)+'…';
+        var same=r[0]===r[1];$('#hnote').textContent=same?'Mêmes textes, mêmes empreintes.':'Textes presque identiques, mais '+bits(r[0],r[1])+' bits sur 256 sont différents : l\'empreinte change complètement.'})}
+    $('#h1').addEventListener('input',run);$('#h2').addEventListener('input',run);run();
+    function pw(){var s=$('#pw').value;var c=0;if(/[a-z]/.test(s))c+=26;if(/[A-Z]/.test(s))c+=26;if(/[0-9]/.test(s))c+=10;if(/[^A-Za-z0-9]/.test(s))c+=33;
+      var bitsE=s.length&&c?Math.round(s.length*Math.log2(c)):0;var sec=Math.pow(2,bitsE)/2/1e10;
+      var t;if(!s.length)t='—';else if(sec<1)t='moins d\'une seconde';else if(sec<60)t=Math.round(sec)+' secondes';else if(sec<3600)t=Math.round(sec/60)+' minutes';else if(sec<86400)t=Math.round(sec/3600)+' heures';else if(sec<31557600)t=Math.round(sec/86400)+' jours';else if(sec<31557600*1e6)t=Math.round(sec/31557600).toLocaleString('fr-FR')+' ans';else t='plus que l\'âge de l\'univers';
+      $('#pwbar').style.width=Math.min(100,bitsE/80*100)+'%';$('#pwbar').style.background=bitsE<45?'var(--bad)':bitsE<65?'var(--warn)':'var(--mint)';
+      $('#pwout').innerHTML=s.length?('Longueur '+s.length+', environ '+bitsE+' bits. Temps estimé pour la trouver si elle était aléatoire : <b>'+t+'</b>.'):'Tape un mot de passe d\'essai.'}
+    $('#pw').addEventListener('input',pw);pw();
+    var plain='LA CURIOSITE EST UNE FORCE',sh=7;
+    function enc(t,k){return t.replace(/[A-Z]/g,function(ch){return String.fromCharCode((ch.charCodeAt(0)-65+k)%26+65)})}
+    var cipher=enc(plain,sh);$('#cin').textContent=cipher;
+    function cs(){var v=+$('#cs').value;$('#cv').textContent=v;var o=enc(cipher,(26-v)%26);$('#cout').textContent=o;if(o===plain)win(6)}
+    $('#cs').addEventListener('input',cs);cs();
+  })();
+
+  /* ---- M7 ---- */
+  (function(){
+    var T=[['loi','La loi'],['pentest','Le pentest'],['bounty','Bug bounty'],['train','S\'entraîner'],['jobs','Métiers'],['plan','Plan 90 jours']];
+    var tb=$('#tabs');T.forEach(function(t,i){var b=el('button',{class:'chip',role:'tab','aria-selected':i===0?'true':'false',type:'button','data-t':t[0]},t[1]);b.addEventListener('click',function(){$$('#tabs .chip').forEach(function(x){x.setAttribute('aria-selected',x===b?'true':'false')});T.forEach(function(u){$('#p-'+u[0]).hidden=u[0]!==t[0]})});tb.appendChild(b)});
+    function rep(){
+      var g=function(i){return $('#r'+i).value.trim()};
+      var txt='TITRE : '+(g(1)||'…')+'\nLIEU : '+(g(2)||'…')+'\n\nÉTAPES POUR REPRODUIRE :\n'+(g(3)||'…')+'\n\nIMPACT :\n'+(g(4)||'…')+'\n\nCORRECTION PROPOSÉE :\n'+(g(5)||'…');
+      $('#rep').textContent=txt;
+      var ck=[[g(1).length>10,'Un titre clair qui dit le problème'],[g(2).length>5,'Un lieu précis (adresse fictive)'],[/1\./.test(g(3))&&g(3).length>40,'Des étapes numérotées que quelqu\'un d\'autre peut refaire'],[g(4).length>30,'Un impact : qui, quelles données, quel pilier'],[g(5).length>20,'Une idée de correction']];
+      $('#rck').innerHTML=ck.map(function(c){return '<li>'+(c[0]?'✔':'○')+' '+c[1]+'</li>'}).join('');
+      if(ck.every(function(c){return c[0]}))win(7);
+    }
+    ['r1','r2','r3','r4','r5'].forEach(function(id){$('#'+id).addEventListener('input',rep)});rep();
+    var plan=[['Créer un compte sur un site d\'entraînement, avec l\'accord d\'un parent si c\'est demandé','Choisir une plateforme et ouvrir un compte'],['Réussir 5 défis faciles sur Root-Me ou TryHackMe','Réussir 5 défis faciles'],['Installer une machine virtuelle Linux sur mon ordinateur','Installer une machine virtuelle Linux'],['Lire les 10 conseils de Cybermalveillance.gouv.fr et protéger mes propres comptes avec un mot de passe long et la double authentification','Protéger mes comptes (mots de passe, double authentification)'],['Écrire un petit rapport sur un défi résolu, comme à l\'atelier','Écrire un rapport sur un défi résolu'],['Suivre un cours gratuit sur PortSwigger Web Security Academy','Suivre un cours gratuit de sécurité web'],['Parler de mon projet à un professeur ou à un professionnel','Présenter mon projet à un adulte de confiance']];
+    var pl=store.get('plan',{});var ul=$('#plan');plan.forEach(function(p,i){var li=el('li');var cb=el('input',{type:'checkbox',id:'pl'+i});cb.checked=!!pl[i];var lb=el('label',{for:'pl'+i,style:'display:inline;font-weight:400;margin-left:8px'},p[0]);cb.addEventListener('change',function(){pl[i]=cb.checked;store.set('plan',pl)});li.appendChild(cb);li.appendChild(lb);ul.appendChild(li)});
+  })();
+
+  /* ---- Quiz ---- */
+  (function(){
+    var Q=[['Qu\'est-ce qui rend une donnée « personnelle » ?',['Elle est secrète','Elle permet d\'identifier une personne','Elle est stockée dans un ordinateur'],1],
+           ['Après une violation de données à risque, on prévient la CNIL sous…',['24 heures','72 heures','un an'],1],
+           ['Une menace qui rencontre une vulnérabilité forme…',['un risque','un pilier','une finalité'],0],
+           ['Pourquoi un compte partagé pose-t-il problème ?',['Il coûte cher','Il empêche de prouver qui a agi','Il est trop rapide'],1],
+           ['Un rançongiciel touche d\'abord quel pilier ?',['La disponibilité','La confidentialité','La preuve'],0],
+           ['Que doit avoir un pentesteur avant de tester un système ?',['Un bon outil','Un accord écrit qui fixe le périmètre','Du temps libre'],1],
+           ['Dans un rapport de bug, que doit-on trouver ?',['Des étapes pour reproduire, l\'impact et une correction','Seulement une capture d\'écran','Le nom du fautif'],0],
+           ['Quelle est la bonne façon de s\'entraîner ?',['Sur un site d\'entraînement fait pour cela','Sur le site du collège','Sur le réseau d\'un voisin'],0]];
+    var box=$('#quiz');var sc=0,ans={};
+    Q.forEach(function(q,i){var d=el('div',{class:'q'},'<b>'+(i+1)+'. '+q[0]+'</b>');var o=el('div',{class:'opts'});q[1].forEach(function(t,j){var b=el('button',{class:'chip',type:'button'},t);b.addEventListener('click',function(){if(ans[i]!=null)return;ans[i]=j;if(j===q[2]){b.classList.add('ok');sc++}else{b.classList.add('ko');o.children[q[2]].classList.add('ok')}
+      $$('button',o).forEach(function(x){x.disabled=true});if(Object.keys(ans).length===Q.length)finish()});o.appendChild(b)});d.appendChild(o);box.appendChild(d)});
+    function finish(){
+      var ok=sc>=6;var cb=$('#certbox');
+      var html='<div class="card"><h3>Résultat : '+sc+' sur '+Q.length+'</h3><p>'+(ok?'Bravo, tu valides la licence.':'Presque. Reviens sur les missions où tu as hésité et refais le quiz en rechargeant la page.')+'</p></div>';
+      if(ok){html+='<div class="card"><label for="nm">Ton prénom pour la licence</label><input type="text" id="nm" maxlength="30" value="'+(store.get('name','').replace(/"/g,''))+'"></div><div class="cert" id="cert"><h3>Licence de hacker éthique</h3><p>Décernée à</p><div class="nm" id="nmo">…</div><p>pour avoir réussi les 7 missions : données personnelles, RGPD, risques, piliers, attaques, laboratoire et bagage éthique.</p><p class="note" style="color:var(--panel-ink)">Rappel du code : autorisation d\'abord, ne pas faire de mal, signaler sans publier, s\'entraîner au bon endroit.</p></div>';win(8)}
+      cb.innerHTML=html;
+      if(ok){var inp=$('#nm');function u(){var v=inp.value.trim();$('#nmo').textContent=v||'…';store.set('name',v)}inp.addEventListener('input',u);u()}
+    }
+  })();
+  rail();
+})();
+</script>
+
+</body></html>
